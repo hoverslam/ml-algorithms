@@ -24,5 +24,3 @@ if __name__ == "__main__":
     
     print(f"Accuracy: {accuracy_score(y_test, y_pred)}")
     print(f"Accuracy (baseline): {accuracy_score(y_test, y_baseline_pred)}")
-    
-    # print(clf.b, clf_baseline.intercept_)

@@ -3,17 +3,16 @@ import cvxopt
 
 
 class SVM:
-    # TODO: rbf kernel (not working), bias, predict
+    # TODO: bias, predict
 
-    def __init__(self, C:float=1.0, kernel:str="linear", degree:int=2, gamma:float=1e-10) -> None:
-        self.C = C
+    def __init__(self, kernel:str="linear", degree:int=2, gamma:float=0.1) -> None:
         self.degree = degree
         self.gamma = gamma
         
         kernel_functions = {
             "linear": (lambda x1, x2: np.dot(x1, x2)),
             "poly": (lambda x1, x2: (1 + np.dot(x1, x2))**self.degree),
-            "rbf": (lambda x1, x2: np.exp(-self.gamma * np.linalg.norm(x1 - x2)**2))
+            "rbf": (lambda x1, x2: np.exp(-(np.linalg.norm(x1 - x2)**2) / (2 * self.gamma**2)))
         }
         self.kernel = kernel_functions[kernel]
         
@@ -29,8 +28,8 @@ class SVM:
         # solve quadratic programming problem
         P = cvxopt.matrix(np.outer(y, y) * K)
         q = cvxopt.matrix(-np.ones(n_observations))
-        G = cvxopt.matrix(np.vstack((-np.eye(n_observations), np.eye(n_observations))))
-        h = cvxopt.matrix(np.hstack((np.zeros(n_observations), np.ones(n_observations) * self.C)))
+        G = cvxopt.matrix(-np.eye(n_observations))
+        h = cvxopt.matrix(np.zeros(n_observations))
         A = cvxopt.matrix(y, (1, n_observations), "d")
         b = cvxopt.matrix(np.zeros(1))
         
