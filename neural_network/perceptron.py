@@ -40,7 +40,8 @@ class SLP:
 
         # Training loop
         lim_min = X.min(axis=0) - 1      
-        lim_max = X.max(axis=0) + 1        
+        lim_max = X.max(axis=0) + 1
+        best_solution = [1e10, self.weights]       
         for epoch in range(self.max_iter):
             for i in range(n_samples):
                 output = np.dot(input[i], self.weights)
@@ -60,11 +61,16 @@ class SLP:
             # Stop training when error is smaller than tolerance
             error = np.mean(np.abs(y - self.predict(X)))
             if error < self.tol:                
-                print(f"Solution found after {epoch+1} iteration(s).")
+                print(f"Optimal solution found after {epoch+1} iteration(s).")
                 break
             
+            # Update "pocket" if solution is better than the current one
+            if best_solution[0] > error:
+                best_solution = [error, self.weights]
+            
         if error > self.tol:
-            print("Maximum number of iterations reached. No solution found!")
+            print("Maximum number of iterations reached. Best solution is used.")
+            self.weights = best_solution[1]
  
         plt.show()            
             
