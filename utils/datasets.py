@@ -1,22 +1,28 @@
 import numpy as np
-from sklearn.datasets import make_blobs, make_circles
+from sklearn.datasets import make_blobs, make_circles, make_moons
 
 
-def generate_data(n, lin_sep: bool = True) -> list[np.ndarray]:
+def generate_data(n, type:str="linear") -> list[np.ndarray]:
     """Generate 2-dimensional data set.
 
     Args:
-        n (int): Number of observations.
-        lin_sep (bool, optional): Generate linearly seperable data. Defaults to True.
+        n (_type_): Number of observations.
+        type (str, optional): Type of data (linear, circles, moons). Defaults to "linear".
 
     Returns:
-        list[np.ndarray]: List of features (X) and corresponding labels (y).
+        list[np.ndarray]: List of features (X) and corresponding label (y).
     """
-    if lin_sep:
-        X, y = make_blobs(n, centers=2)
-    else:  
-        X, y = make_circles(n, noise=0.1, factor=0.2)
     
+    match type:
+        case "linear": 
+            X, y = make_blobs(n, centers=2)
+        case "circles": 
+            X, y = make_circles(n, noise=0.1, factor=0.2)
+        case "moons": 
+            X, y = make_moons(n, noise=0.1)
+        case other:
+            print("No such data type available!")
+
     return (X, y)
 
 def split_data(X: np.ndarray, y:np.ndarray, train_size: int = 0.8) -> list[np.ndarray]:
