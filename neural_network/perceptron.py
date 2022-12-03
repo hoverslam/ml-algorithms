@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 
 class SLP:
-    """Implements a Single Layer Perceptron for linear binary classification.
+    """Implements a (Single Layer) Perceptron for linear binary classification.
     """
     
     def __init__(self, lr:float=1e-3, tol:float=1e-5, max_iter:int=100) -> None:
