@@ -6,12 +6,12 @@ class SLP:
     """Implements a (Single Layer) Perceptron for linear binary classification.
     """
     
-    def __init__(self, lr:float=1e-3, tol:float=1e-5, max_iter:int=100) -> None:
+    def __init__(self, lr:float=1e-2, tol:float=1e-5, max_iter:int=100) -> None:
         """Initialize Percetpron.
 
         Args:
             lr (float, optional): The learning rate defines the amount by which 
-                the error effects the weight update. Defaults to 1e-3.
+                the error effects the weight update. Defaults to 1e-2.
             tol (float, optional): Stopping criterion for a good enough solution. Defaults to 1e-5.
             max_iter (int, optional): Maximum number of epochs over the training data. Defaults to 100.
         """
