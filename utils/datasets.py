@@ -17,8 +17,6 @@ def generate_data(n: int = 1000, lin_sep: bool = True) -> list[np.ndarray]:
         X, y = make_blobs(n, centers=2)
     else:  
         X, y = make_circles(n, noise=0.1, factor=0.2)
-        
-    y = np.where(y == 0, -1, y)
     
     return (X, y)
 
