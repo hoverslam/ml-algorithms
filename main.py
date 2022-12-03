@@ -1,7 +1,7 @@
 from utils.datasets import generate_data, split_data
 from utils.metrics import accuracy_score
 
-from neural_networks.perceptron import SLP
+from neural_network.perceptron import SLP
 
 
 if __name__ == "__main__":
