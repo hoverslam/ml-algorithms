@@ -1,13 +1,12 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.datasets import make_blobs, make_circles
 
 
-def generate_data(n: int = 1000, lin_sep: bool = True) -> list[np.ndarray]:
+def generate_data(n, lin_sep: bool = True) -> list[np.ndarray]:
     """Generate 2-dimensional data set.
 
     Args:
-        n (int, optional): Number of observations. Defaults to 1000.
+        n (int): Number of observations.
         lin_sep (bool, optional): Generate linearly seperable data. Defaults to True.
 
     Returns:
@@ -33,15 +32,4 @@ def split_data(X: np.ndarray, y:np.ndarray, train_size: int = 0.8) -> list[np.nd
     """
     ind = int(len(y) * train_size)
     
-    return(X[:ind, ], X[ind:,], y[:ind], y[ind:]) 
-
-def plot_data(X: np.ndarray, y: np.ndarray) -> None:
-    """Plot data points with their corresponding class.
-
-    Args:
-        X (np.ndarray): Features
-        y (np.ndarray): Labels
-    """
-    _, ax = plt.subplots()
-    ax.scatter(X.T[0], X.T[1], s=5, c=y)
-    plt.show()
+    return(X[:ind, ], X[ind:,], y[:ind], y[ind:])
