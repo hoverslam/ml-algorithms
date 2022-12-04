@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.datasets import make_blobs, make_circles, make_moons
+from sklearn.datasets import make_blobs, make_classification, make_circles, make_moons
 
 
 def generate_data(n, type:str="linear") -> list[np.ndarray]:
@@ -7,7 +7,7 @@ def generate_data(n, type:str="linear") -> list[np.ndarray]:
 
     Args:
         n (_type_): Number of observations.
-        type (str, optional): Type of data (linear, circles, moons). Defaults to "linear".
+        type (str, optional): Type of data (linear, clusters, circles, moons). Defaults to "linear".
 
     Returns:
         list[np.ndarray]: List of features (X) and corresponding label (y).
@@ -16,6 +16,8 @@ def generate_data(n, type:str="linear") -> list[np.ndarray]:
     match type:
         case "linear": 
             X, y = make_blobs(n, centers=2)
+        case "clusters":
+            X, y = make_classification(n, n_features=2, n_redundant=0, class_sep=3)
         case "circles": 
             X, y = make_circles(n, noise=0.1, factor=0.2)
         case "moons": 
