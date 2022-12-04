@@ -72,7 +72,16 @@ class SLP:
             print("Maximum number of iterations reached. Best solution is used.")
             self.weights = best_solution[1]
  
-        plt.show()            
+        # Plot final (i.e. best found) decision boundary
+        if n_features == 2 and show:
+            x_values, y_values = self.decision_boundary()
+            plt.clf()
+            plt.title(f"Iteration: {epoch+1}")
+            plt.xlim(lim_min[0], lim_max[0])
+            plt.ylim(lim_min[1], lim_max[1])
+            plt.scatter(X.T[0], X.T[1], s=5, c=y)
+            plt.plot(x_values, y_values, c="black")
+            plt.show()            
             
     def predict(self, X:np.ndarray) -> np.ndarray:
         """Perform classification on samples in X.
