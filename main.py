@@ -1,15 +1,21 @@
-from utils.datasets import generate_data, split_data
-from utils.metrics import accuracy_score
+from sklearn.neural_network import MLPClassifier
 
-from neural_network.perceptron import SLP
+from utils.datasets import generate_data, split_data
+from neural_network.perceptron import MLP
 
 
 if __name__ == "__main__":
-    X, y = generate_data(1000, type="linear")
+    X, y = generate_data(1000, type="clusters")
     X_train, X_test, y_train, y_test = split_data(X, y)
-    
-    clf = SLP()
+
+    clf = MLP(X.shape[1], (100,), epochs=500)
     clf.fit(X_train, y_train)
-    train_acc = accuracy_score(y_train, clf.predict(X_train))
-    test_acc = accuracy_score(y_test, clf.predict(X_test))
+    train_acc = clf.score(X_train, y_train)
+    test_acc = clf.score(X_test, y_test)
+    print(f"Accuracy (train, test): {train_acc}, {test_acc}")
+
+    clf = MLPClassifier()
+    clf.fit(X_train, y_train)
+    train_acc = clf.score(X_train, y_train)
+    test_acc = clf.score(X_test, y_test)
     print(f"Accuracy (train, test): {train_acc}, {test_acc}")
