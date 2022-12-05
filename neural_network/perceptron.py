@@ -114,6 +114,18 @@ class SLP:
         
         return (x, y)
     
+    def score(self, X:np.ndarray, y:np.ndarray) -> float:
+        """Caclulate the mean accuracy on the given data and labels.
+
+        Args:
+            X (np.ndarray): The input samples.
+            y (np.ndarray): The true labels for X.
+
+        Returns:
+            float: The mean accuracy of the predictions.
+        """
+        return accuracy_score(y, self.predict(X))
+    
     
 class MLP:
     """Implements a Multi Layer Perceptron for binary classification.
