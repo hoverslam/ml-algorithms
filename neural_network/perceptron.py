@@ -233,18 +233,26 @@ class MLP:
             input (np.ndarray): The input samples.
             outputs (list[np.ndarray]): The raw output of each layer.
             gradient_of_loss (np.ndarray): Gradient of the loss from output layer.
-        """
-        # TODO: Make loop
-        # Backpropagate
-        d_l1 = gradient_of_loss * self.activation[1](outputs[1])
-        d_l0 = np.dot(d_l1, self.weights[1].T) * self.activation[1](outputs[0])
+        """        
+        # Backpropagate starting with the output layer    
+        grads = []    
+        grads.append(gradient_of_loss * self.activation[1](outputs[-1]))
+        
+        # Backpropgate through remaining layers (in reversed order)
+        for i in reversed(range(len(outputs[:-1]))):
+            layer = np.dot(grads[-1], self.weights[i+1].T) * self.activation[1](outputs[i])
+            grads.append(layer)
 
-        # Update weights and bias
-        self.weights[0] -= self.lr * np.dot(input.T, d_l0)
-        self.bias[0] -= self.lr * np.sum(d_l0, axis=0)
-        self.weights[1] -= self.lr * np.dot(outputs[0].T, d_l1)
-        self.bias[1] -= self.lr * np.sum(d_l1, axis=0)
-    
+        # Update weights and bias of input layer
+        grads = grads[::-1]    # reverse list of gradients
+        self.weights[0] -= self.lr * np.dot(input.T, grads[0])
+        self.bias[0] -= self.lr * np.sum(grads[0], axis=0)
+        
+        # Update weights and bias of remaining layers
+        for i in range(len(grads)-1):
+            self.weights[i+1] -= self.lr * np.dot(outputs[i].T, grads[i+1])
+            self.bias[i+1] -= self.lr * np.sum(grads[i+1], axis=0)
+ 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """Perform classification on samples in X.
 
