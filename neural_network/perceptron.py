@@ -132,7 +132,7 @@ class MLP:
     """
        
     def __init__(self, input_dim:int, hidden_dims:tuple[int], activation:str="sigmoid", 
-                 lr:float=1e-3, epochs:int=1000) -> None:
+                 lr:float=1e-3, epochs:int=100) -> None:
         """Initialize MLP.
 
         Args:
@@ -158,12 +158,13 @@ class MLP:
         self.activation = activation_functions[activation]
         self.loss = BinaryCrossEntropyLoss()
     
-    def fit(self, X:np.ndarray, y:np.ndarray) -> None:
+    def fit(self, X:np.ndarray, y:np.ndarray, plot_history:bool=False) -> None:
         """Fit the model according to the given training data.
 
         Args:
             X (np.ndarray): The input samples.
             y (np.ndarray): The class values (0 or 1).
+            plot_history (bool, optional): Plot the loss over all epochs.
         """
         X = X.reshape(-1, self.input_dim)
         y = y.reshape(-1, 1)
@@ -173,7 +174,7 @@ class MLP:
         self.init_params()
 
         # Training loop
-        loss_hist = {}        
+        hist = {"epoch":[], "loss":[]}        
         pbar = trange(self.epochs)
         for epoch in pbar:
             loss = 0
@@ -186,9 +187,14 @@ class MLP:
                 input = X[idx].reshape(self.batch_size, n_features)
                 gradient = self.loss.gradient(y[idx], outputs[-1])
                 self.gradient_descent(input, outputs, gradient)
-                
-            loss_hist[epoch+1] = loss / n_samples
-            pbar.set_description(f"Loss: {np.sum(loss / n_samples):.4f}")
+            
+            loss_epoch = np.sum(loss / n_samples)    
+            hist["epoch"].append(epoch + 1)
+            hist["loss"].append(loss_epoch)
+            pbar.set_description(f"Loss: {loss_epoch:.4f}")
+            
+        if plot_history:
+            self.plot_loss(hist)
     
     def forward(self, X:np.ndarray) -> list[np.ndarray]:
         """One forward pass from the input to the output layer.
@@ -285,3 +291,13 @@ class MLP:
         dim = (self.weights[-1].shape[1], self.output_dim)
         self.weights.append(np.random.random(dim))
         self.bias.append(np.full((1, self.output_dim), 1e-3))
+        
+    def plot_loss(self, hist:dict) -> None:
+        epoch = hist["epoch"]
+        loss = hist["loss"]
+        
+        plt.title("Loss curve of training")
+        plt.xlabel("epoch")
+        plt.ylabel("loss")
+        plt.plot(epoch, loss, marker=".")
+        plt.show() 
