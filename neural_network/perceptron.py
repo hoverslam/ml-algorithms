@@ -293,6 +293,11 @@ class MLP:
         self.bias.append(np.full((1, self.output_dim), 1e-3))
         
     def plot_loss(self, hist:dict) -> None:
+        """Plot loss curve of training.
+
+        Args:
+            hist (dict): Loss of each epoch.
+        """
         epoch = hist["epoch"]
         loss = hist["loss"]
         
