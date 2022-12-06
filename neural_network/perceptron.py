@@ -177,18 +177,23 @@ class MLP:
         hist = {"epoch":[], "loss":[]}        
         pbar = trange(self.epochs)
         for epoch in pbar:
+            # Shuffle data
+            s = np.arange(n_samples)
+            np.random.shuffle(s)
+            X_s, y_s = X[s], y[s]
+        
             loss = 0
-            for idx in range(n_samples):
+            for idx in range(X_s.shape[0]):
                 # Forward propagation
-                outputs = self.forward(X[idx])
-                loss += self.loss.loss(y[idx], outputs[-1])
+                outputs = self.forward(X_s[idx])
+                loss += self.loss.loss(y_s[idx], outputs[-1])
                 
                 # Gradient descent (update weights)
-                input = X[idx].reshape(self.batch_size, n_features)
-                gradient = self.loss.gradient(y[idx], outputs[-1])
+                input = X_s[idx].reshape(self.batch_size, n_features)
+                gradient = self.loss.gradient(y_s[idx], outputs[-1])
                 self.gradient_descent(input, outputs, gradient)
             
-            loss_epoch = np.sum(loss / n_samples)    
+            loss_epoch = np.sum(loss / X_s.shape[0])    
             hist["epoch"].append(epoch + 1)
             hist["loss"].append(loss_epoch)
             pbar.set_description(f"Loss: {loss_epoch:.4f}")
