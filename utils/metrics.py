@@ -40,3 +40,18 @@ def mean_absolute_error(y_true:np.ndarray, y_pred:np.ndarray) -> float:
         float: Mean absolute error (MAE).
     """
     return np.mean(np.abs(y_pred - y_true))
+
+def r2_score(y_true:np.ndarray, y_pred:np.ndarray) -> float:
+    """Calcualte the coefficient of determination (R squared).
+
+    Args:
+        y_true (np.ndarray): Correct labels.
+        y_pred (np.ndarray): Predicted labels.
+
+    Returns:
+        float: R squared (R^2).
+    """
+    rss = np.sum((y_true - y_pred)**2)
+    tss = np.sum((y_true - np.mean(y_true))**2)
+    
+    return 1 - (rss / tss)
