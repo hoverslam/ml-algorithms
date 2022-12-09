@@ -30,7 +30,8 @@ class Perceptron:
         Args:
             X (np.ndarray): The input samples.
             y (np.ndarray): The class values (0 or 1).
-            show (bool, optional): Plot the movement of the decision boundary during training. Defaults to False.
+            show (bool, optional): Plot the movement of the decision boundary during training. 
+                Only works with 2D feature input. Defaults to False.
         """
         # Initialize values
         n_samples, n_features = X.shape
