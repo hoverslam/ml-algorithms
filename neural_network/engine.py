@@ -6,7 +6,7 @@ import math
 
 
 class Node:
-    """Implements a node in a computational graph containing its local derivative.
+    """Implements a node in a computational graph with its value and local derivative.
     """
     
     def __init__(self, value:float, childs:tuple[Node]=()) -> None:
@@ -74,7 +74,7 @@ class Node:
         out._backward = _backward
         
         return out
-    
+
     def tanh(self) -> Node:
         """Calculate output of the hyperbolic tangent (tanh) activation function and
         its backpropagated gradient.
