@@ -2,8 +2,8 @@ import numpy as np
 from sklearn import datasets
 
 
-def generate_data(n, type:str="linear") -> list[np.ndarray]:
-    """Generate 2-dimensional data set.
+def generate_data(n, type:str="linear", **kwargs) -> list[np.ndarray]:
+    """Generate different types of data.
 
     Args:
         n (_type_): Number of observations.
@@ -17,15 +17,15 @@ def generate_data(n, type:str="linear") -> list[np.ndarray]:
     
     match type:
         case "linear": 
-            X, y = datasets.make_blobs(n, centers=2)
+            X, y = datasets.make_blobs(n, centers=2, **kwargs)
         case "clusters":
-            X, y = datasets.make_classification(n, n_features=2, n_redundant=0, class_sep=3)
+            X, y = datasets.make_classification(n, n_redundant=0, class_sep=3, **kwargs)
         case "circles": 
             X, y = datasets.make_circles(n, noise=0.1, factor=0.2)
         case "moons": 
             X, y = datasets.make_moons(n, noise=0.1)
         case "regression":
-            X, y = datasets.make_regression(n, noise=0.1, bias=rng.uniform(-1, 1))
+            X, y = datasets.make_regression(n, noise=0.1, bias=rng.uniform(-1, 1), **kwargs)
         case other:
             print("No such data type available!")
 
