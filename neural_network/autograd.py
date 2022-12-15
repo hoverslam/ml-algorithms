@@ -5,8 +5,11 @@ from __future__ import annotations
 import math
 
 
+# TODO: "Numpify" to speed everything up
+
+
 class Node:
-    """Implements a node in a computational graph with its value and local derivative.
+    """Implements a node in a computational graph with its value and global derivative.
     """
     
     def __init__(self, value:float, childs:tuple[Node]=()) -> None:
