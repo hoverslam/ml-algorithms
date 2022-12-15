@@ -1,200 +1,128 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from tqdm import trange
 
-from utils.losses import BinaryCrossEntropyLoss
-from utils.metrics import accuracy_score
- 
-    
+from neural_network.nn import Layer
+from neural_network.autograd import Node
+
+
 class MLP:
-    """Implements a Multi Layer Perceptron for binary classification.
+    """Implements a Multi Layer Perceptron (MLP) for simple multivariate regression.
     """
-       
-    def __init__(self, input_dim:int, hidden_dims:tuple[int], activation:str="sigmoid", 
-                 lr:float=1e-3, epochs:int=100) -> None:
+    
+    def __init__(self, n_in:int, n_hidden:tuple, n_out:int=1, lr:float=1e-3) -> None:
         """Initialize MLP.
 
         Args:
-            input_dim (int): Number of features.
-            hidden_dims (tuple[int]): Number of neurons per layer.
-            activation (str, optional): Activation function for the hidden layer 
-                (currently only one is available). Defaults to "sigmoid".
-            lr (float, optional): The learning rate effects the amount by which 
-                the weights are updated. Defaults to 1e-3.
-            epochs (int, optional): Number of training iterations. Defaults to 1000.
+            n_in (int): Number of input features.
+            n_hidden (tuple): Number of hidden layers.
+            n_out (int, optional): Number of outputs. Only single output right now!
+                Defaults to 1.
+            lr (float, optional): Learning rate for parameter updates. Defaults to 1e-3.
         """
-        self.input_dim = input_dim
-        self.hidden_dims = hidden_dims
-        self.output_dim = 1    # TODO: Implement multi-class prediction
+        self.layers = self.create_network(n_in, n_hidden, n_out)
         self.lr = lr
-        self.epochs = epochs
-        self.batch_size = 1    # TODO Implement mini-batch gradient descent
-        
-        activation_functions = {
-            # [0] = function, [1] = it's derivative
-            "sigmoid": [lambda x: 1 / (1.0 + np.exp(-x)), lambda x: x * (1.0 - x)]
-        }
-        self.activation = activation_functions[activation]
-        self.loss = BinaryCrossEntropyLoss()
     
-    def fit(self, X:np.ndarray, y:np.ndarray, plot_history:bool=False) -> None:
+    def __call__(self, x:list[float]) -> Node:
+        """Forward pass of a single observation.
+
+        Args:
+            x (list[float]): A vector of input features.
+
+        Returns:
+            Node: Output value.
+        """
+        for layer in self.layers:
+            x = layer(x)
+            
+        return x[0]
+    
+    def parameters(self) -> list[Node]:
+        """Return all parameters in this MLP.
+
+        Returns:
+            list[Node]: A list of all weights and biases.
+        """
+        return [p for layer in self.layers for p in layer.parameters()]
+    
+    def zero_grad(self) -> None:
+        """Sets all gradients to zero.
+        """
+        for p in self.parameters():
+            p.grad = 0.0
+    
+    def create_network(self, n_in:int, n_hidden:tuple, n_out:int) -> list[Layer]:
+        """Create all layers need for the given input.
+
+        Args:
+            n_in (int): Number of input features.
+            n_hidden (tuple): Number of hidden layers.
+            n_out (int): Number of output values.
+
+        Returns:
+            list[Layer]: A list of all layers.
+        """
+        # Input layer
+        layers = [Layer(n_in, n_hidden[0])]
+        
+        # Hidden layers
+        for i, n in enumerate(n_hidden[1:]):
+            layers.append(Layer(n_hidden[i], n))
+            
+        # Output layer
+        layers.append(Layer(n_hidden[-1], n_out, lin=True))
+        
+        return layers
+    
+    def fit(self, X:np.ndarray, y:np.ndarray, epochs:int=1000) -> dict:
         """Fit the model according to the given training data.
 
         Args:
             X (np.ndarray): The input samples.
-            y (np.ndarray): The class values (0 or 1).
-            plot_history (bool, optional): Plot the loss over all epochs.
-        """
-        X = X.reshape(-1, self.input_dim)
-        y = y.reshape(-1, 1)
-        n_samples, n_features = X.shape
-                
-        # Initialize parameter
-        self.init_params()
+            y (np.ndarray): The target values.
+            epochs (int, optional): Number of training epochs. Defaults to 1000.
 
+        Returns:
+            dict: Dictionary containing loss per epoch.
+        """      
+        # Convert to python list
+        X, y = X.tolist(), y.tolist()
+        
         # Training loop
-        hist = {"epoch":[], "loss":[]}        
-        pbar = trange(self.epochs)
-        for epoch in pbar:
-            # Shuffle data
-            s = np.arange(n_samples)
-            np.random.shuffle(s)
-            X_s, y_s = X[s], y[s]
-        
-            loss = 0
-            for idx in range(X_s.shape[0]):
-                # Forward propagation
-                outputs = self.forward(X_s[idx])
-                loss += self.loss.loss(y_s[idx], outputs[-1])
-                
-                # Gradient descent (update weights)
-                input = X_s[idx].reshape(self.batch_size, n_features)
-                gradient = self.loss.gradient(y_s[idx], outputs[-1])
-                self.gradient_descent(input, outputs, gradient)
+        history = {"epoch":[], "loss":[]}
+        pbar = trange(epochs)
+        for i in pbar:
+            # Forward pass
+            logits = [self(x) for x in X]
+            loss = sum((target - pred)**2 for target, pred in zip(y, logits)) / len(logits)
             
-            loss_epoch = np.sum(loss / X_s.shape[0])    
-            hist["epoch"].append(epoch + 1)
-            hist["loss"].append(loss_epoch)
-            pbar.set_description(f"Loss: {loss_epoch:.4f}")
+            # Backward pass
+            self.zero_grad()
+            loss.backward()
             
-        if plot_history:
-            self.plot_loss(hist)
+            # Update weights
+            for p in self.parameters():
+                p.value -= self.lr * p.grad
+            
+            # Save training loss    
+            history["epoch"].append(i+1)
+            history["loss"].append(loss.value)
+            
+            # Update progress bar
+            pbar.set_description(f"Loss={loss.value:.4f}")
+            
+        return history
     
-    def forward(self, X:np.ndarray) -> list[np.ndarray]:
-        """One forward pass from the input to the output layer.
+    def predict(self, X:np.ndarray) -> list[float]:
+        """Make predictions on samples in X.
 
         Args:
             X (np.ndarray): The input samples.
 
         Returns:
-            list[np.ndarray]: The raw output of each layer.
+            list[float]: List of predictions.
         """
-        output_per_layer = []
-
-        # Pass through input layer
-        output = np.dot(X, self.weights[0]) + self.bias[0]
-        output = self.activation[0](output)
-        output_per_layer.append(output)
-        
-        # Pass through hidden layers
-        for i in range(len(self.hidden_dims) - 1):
-            output = np.dot(output, self.weights[i+1]) + self.bias[i+1]
-            output = self.activation[0](output)
-            output_per_layer.append(output)
+        predictions = []
+        for x in X.tolist():
+            predictions.append(self(x).value)
             
-        # Pass through output layer
-        output = np.dot(output, self.weights[-1]) + self.bias[-1]
-        output = self.activation[0](output)
-        output_per_layer.append(output)
-    
-        return output_per_layer
-                   
-    def gradient_descent(self, input:np.ndarray, outputs:list[np.ndarray], 
-                         gradient_of_loss: np.ndarray) -> None:
-        """Backpropagate and update weights according to the gradients.
-
-        Args:
-            input (np.ndarray): The input samples.
-            outputs (list[np.ndarray]): The raw output of each layer.
-            gradient_of_loss (np.ndarray): Gradient of the loss from output layer.
-        """        
-        # Backpropagate starting with the output layer    
-        grads = []    
-        grads.append(gradient_of_loss * self.activation[1](outputs[-1]))
-        
-        # Backpropgate through remaining layers (in reversed order)
-        for i in reversed(range(len(outputs[:-1]))):
-            layer = np.dot(grads[-1], self.weights[i+1].T) * self.activation[1](outputs[i])
-            grads.append(layer)
-
-        # Update weights and bias of input layer
-        grads = grads[::-1]    # reverse list of gradients
-        self.weights[0] -= self.lr * np.dot(input.T, grads[0])
-        self.bias[0] -= self.lr * np.sum(grads[0], axis=0)
-        
-        # Update weights and bias of remaining layers
-        for i in range(len(grads)-1):
-            self.weights[i+1] -= self.lr * np.dot(outputs[i].T, grads[i+1])
-            self.bias[i+1] -= self.lr * np.sum(grads[i+1], axis=0)
- 
-    def predict(self, X: np.ndarray) -> np.ndarray:
-        """Perform classification on samples in X.
-
-        Args:
-            X (np.ndarray): The input samples.
-
-        Returns:
-            np.ndarray:  Class labels for samples in X.
-        """
-        output = self.forward(X)[-1]    # Only the output layer is used for predictions
-        
-        return (1 * (output > 0.5)).reshape(-1)
-    
-    def score(self, X:np.ndarray, y:np.ndarray) -> float:
-        """Caclulate the mean accuracy on the given data and labels.
-
-        Args:
-            X (np.ndarray): The input samples.
-            y (np.ndarray): The true labels for X.
-
-        Returns:
-            float: The mean accuracy of the predictions.
-        """
-        return accuracy_score(y, self.predict(X))
-       
-    def init_params(self):
-        """Initialize weights and bias.
-        """
-        self.weights = []
-        self.bias = []
-        
-        # Initialize input layer
-        dim = (self.input_dim, self.hidden_dims[0])
-        self.weights.append(np.random.random(dim))
-        self.bias.append(np.full((1, self.hidden_dims[0]), 1e-3))
-        
-        # Initialize hidden layer
-        for i, n in enumerate(self.hidden_dims[1:]):
-            dim = (self.weights[i].shape[1], n)
-            self.weights.append(np.random.random(dim))
-            self.bias.append(np.full((1, n), 1e-3))
-            
-        # Initialize output layer
-        dim = (self.weights[-1].shape[1], self.output_dim)
-        self.weights.append(np.random.random(dim))
-        self.bias.append(np.full((1, self.output_dim), 1e-3))
-        
-    def plot_loss(self, hist:dict) -> None:
-        """Plot loss curve of training.
-
-        Args:
-            hist (dict): Loss of each epoch.
-        """
-        epoch = hist["epoch"]
-        loss = hist["loss"]
-        
-        plt.title("Loss curve of training")
-        plt.xlabel("epoch")
-        plt.ylabel("loss")
-        plt.plot(epoch, loss, marker=".")
-        plt.show() 
+        return predictions
