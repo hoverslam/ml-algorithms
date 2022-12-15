@@ -1,6 +1,6 @@
 import numpy as np
 
-class Linear:
+class LinearKernel:
     
     def __init__(self) -> None:
         """Initialize linear kernel.
@@ -23,7 +23,7 @@ class Linear:
             
         return x @ y.T
 
-class Polynomial:
+class PolynomialKernel:
     
     def __init__(self, degree:int=3, offset:int=0) -> None:
         """Initialize polynomial kernel.
@@ -51,7 +51,7 @@ class Polynomial:
             
         return (self.offset + (x @ y.T))**self.degree
 
-class RBF:
+class RBFKernel:
     # TODO: Implement RBF kernel, https://en.wikipedia.org/wiki/Radial_basis_function_kernel
     # The easy way with two loops is in O(n^2), but there are different types of approximation.
     pass
