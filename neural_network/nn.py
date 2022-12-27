@@ -77,7 +77,7 @@ class Layer:
     
 
 class MLP:
-    """Implements a Multi Layer Perceptron (MLP) for simple multivariate regressions.
+    """Implements a Multi Layer Perceptron (MLP) for simple regressions.
     """
     
     def __init__(self, n_in:int, n_hidden:tuple, n_out:int=1, lr:float=1e-3) -> None:
